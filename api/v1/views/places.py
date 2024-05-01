@@ -65,3 +65,22 @@ def place_create(city_id):
 
     return response
 
+
+@app_views.route("/places/<place_id>",  methods=["DELETE"],
+                 strict_slashes=False)
+def place_delete_by_id(place_id):
+    """
+    deletes Place by id
+    :param place_id: Place object id
+    :return: empty dict with 200 or 404 if not found
+    """
+
+    fetched_obj = storage.get("Place", str(place_id))
+
+    if fetched_obj is None:
+        abort(404)
+
+    storage.delete(fetched_obj)
+    storage.save()
+
+    return jsonify({})
