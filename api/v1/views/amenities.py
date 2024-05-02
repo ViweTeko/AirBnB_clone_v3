@@ -94,7 +94,7 @@ def amenity_create():
 
     new_am = Amenity(**am_json)
     new_am.save()
-    resp = jsonify(new_am.to_json())
-    resp.status_code = 201
+    response = jsonify(new_am.to_json())
+    response.status_code = 201
 
-    return resp
+    return response
