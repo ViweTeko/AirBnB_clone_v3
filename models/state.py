@@ -2,10 +2,10 @@
 """ holds class State"""
 import models
 from models.base_model import BaseModel, Base
-import os
+from os import environ
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
+storage_type = environ.get('HBNB_TYPE_STORAGE')
 
 
 class State(BaseModel, Base):
@@ -16,10 +16,6 @@ class State(BaseModel, Base):
         cities = relationship("City", backref="state", cascade="delete")
     else:
         name = ""
-
-    def __init__(self, *args, **kwargs):
-        """initializes state"""
-        super().__init__(*args, **kwargs)
 
     if storage_type != "db":
         @property

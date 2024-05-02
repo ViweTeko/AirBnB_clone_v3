@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 """ holds class User"""
 from models.base_model import BaseModel, Base
-import os
-import sqlalchemy
+from os import environ
 from sqlalchemy import Column, Float, Integer, String
 from sqlalchemy.orm import relationship
 from hashlib import md5
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
+storage_type = environ.get('HBNB_TYPE_STORAGE')
 
 
 class User(BaseModel, Base):

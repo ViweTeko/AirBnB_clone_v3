@@ -1,9 +1,9 @@
 #!/usr/bin/python
 """ holds class Review"""
 from models.base_model import BaseModel, Base
-import os
+from os import environ
 from sqlalchemy import Column, String, ForeignKey, Float, Integer
-storage_type = os.environ.get("HBNB_STORSGE_TYPE")
+storage_type = environ.get("HBNB_STORSGE_TYPE")
 
 
 class Review(BaseModel, Base):
