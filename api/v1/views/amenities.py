@@ -78,3 +78,23 @@ def amenity_put(amenity_id):
             setattr(fetched_obj, key, val)
     fetched_obj.save()
     return jsonify(fetched_obj.to_json())
+
+
+@app_views.route("/amenities", methods=["POST"], strict_slashes=False)
+def amenity_create():
+    """
+    create amenity route
+    :return: newly created amenity obj
+    """
+    am_json = request.get_json(silent=True)
+    if am_json is None:
+        abort(400, 'Not a JSON')
+    if "name" not in am_json:
+        abort(400, 'Missing name')
+
+    new_am = Amenity(**am_json)
+    new_am.save()
+    resp = jsonify(new_am.to_json())
+    resp.status_code = 201
+
+    return resp
