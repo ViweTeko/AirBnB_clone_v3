@@ -2,36 +2,32 @@
 """
 Contains the class DBStorage
 """
-
-import models
-from models.amenity import Amenity
-from models.base_model import BaseModel, Base
-from models.city import City
-from models.place import Place
-from models.review import Review
-from models.state import State
-from models.user import User
-from os import getenv
-import sqlalchemy
-from sqlalchemy import create_engine
+from models import amenity, base_model, city, place, review, state, user
+from os import environ
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-classes = {"Amenity": Amenity, "City": City,
-           "Place": Place, "Review": Review, "State": State, "User": User}
 
 
 class DBStorage:
-    """interaacts with the MySQL database"""
+    """interacts with the MySQL database"""
+    CNC = { 
+        'BaseModel': base_model.BaseModel,
+        'Amenity': amenity.Amenity,
+        'City': city.City,
+        'Place': review.Review,
+        'State': state.State,
+        'User': user.User
+    }
     __engine = None
     __session = None
 
     def __init__(self):
         """Instantiate a DBStorage object"""
-        HBNB_MYSQL_USER = getenv('HBNB_MYSQL_USER')
-        HBNB_MYSQL_PWD = getenv('HBNB_MYSQL_PWD')
-        HBNB_MYSQL_HOST = getenv('HBNB_MYSQL_HOST')
-        HBNB_MYSQL_DB = getenv('HBNB_MYSQL_DB')
-        HBNB_ENV = getenv('HBNB_ENV')
+        HBNB_MYSQL_USER = environ.get('HBNB_MYSQL_USER')
+        HBNB_MYSQL_PWD = environ.get('HBNB_MYSQL_PWD')
+        HBNB_MYSQL_HOST = environ.get('HBNB_MYSQL_HOST')
+        HBNB_MYSQL_DB = environ.get('HBNB_MYSQL_DB')
+        HBNB_ENV = environ.get('HBNB_ENV')
         self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.
                                       format(HBNB_MYSQL_USER,
                                              HBNB_MYSQL_PWD,
@@ -43,12 +39,19 @@ class DBStorage:
     def all(self, cls=None):
         """query on the current database session"""
         new_dict = {}
-        for clss in classes:
-            if cls is None or cls is classes[clss] or cls is clss:
-                objs = self.__session.query(classes[clss]).all()
-                for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    new_dict[key] = obj
+        if cls:
+            objs = self.__session.query(self.CNC.get(cls)).all()
+            for obj in objs:
+                key = str(obj.__class__.__name__) + '.' + str(obj.id)
+                new_dict[key] = obj
+            return (new_dict)
+        for cls_name in self.CNC:
+            if cls_name == 'BaseModel':
+                continue
+            objs = self.__session.query(self.CNC.get(cls_name)).all()
+            for obj in objs:
+                key = str(obj.__class__.__name__) + '.' + str(obj.id)
+                new_dict[key] = obj
         return (new_dict)
 
     def new(self, obj):
@@ -76,19 +79,19 @@ class DBStorage:
         self.__session.remove()
 
     def get(self, cls, id):
-        """Gets back an object by class and ID,or None if not found"""
-        if cls is None or id is None:
-            return None
-        if type(cls) is str:
-            if cls not in classes:
-                return None
-            cls = classes[cls]
-        save = models.storage.all(cls)
-        return save.get("{}.{}".format(cls.__name__, id))
+        """Gets back an object by class and ID
+        :param cls: Class
+        :param id: ID of obj
+        :return: obj or None
+        """
+        all_cls = self.all(cls)
+        for obj in all_cls.values():
+            if id == str(obj.id):
+                return obj
+
+        return None
 
     def count(self, cls=None):
         """Counts objects in storage based on a specified class; if no class is provided,
         counts all stored objects"""
-        if cls is None:
-            return len(models.storage.all())
-        return len(models.storage.all(cls))
+        return len(self.all(cls))
